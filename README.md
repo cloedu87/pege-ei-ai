@@ -11,11 +11,13 @@ docker compose run --rm --entrypoint "pip install pgai && pip install -U pgai &&
 docker compose up -d
 ```
 
-create the extension and data table
+log in to the database within the docker container
 
 ```bash
 docker compose exec -it db psql
 ```
+
+create the extension and data table
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS ai CASCADE;
@@ -66,12 +68,14 @@ perform a semantic search: Run the following search query to retrieve the embedd
 
 ```sql
 SELECT
+    blog.title,
+    blog.id,
     chunk,
-    embedding <=>  ai.ollama_embed('nomic-embed-text', 'good food', host => 'http://ollama:11434') as distance
+    embedding <=> ai.ollama_embed('nomic-embed-text', 'good food', host => 'http://ollama:11434') as distance
 FROM blog_contents_embeddings
+JOIN blog ON blog.id = blog_contents_embeddings.id
 ORDER BY distance
 LIMIT 10;
-
 ```
 
 Pull the models we need to run the queries and vectorize the data
